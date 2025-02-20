@@ -1,0 +1,17 @@
+name: ${pluginName}
+main: "me.badaimweeb.mcelo.MCElo"
+
+version: ${version}
+author: BadAimWeeb
+
+api-version: "1.13"
+description: "General-purpose Glicko-2 Elo calulator/tracker for Spigot/Paper"
+
+commands:
+  mcelo:
+    description: "Main command for MCElo"
+    aliases: ["elo"]
+
+permissions:
+  mcelo.*:
+    description: "Ability to use all MCElo commands"

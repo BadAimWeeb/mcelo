@@ -1,0 +1,17 @@
+
+database:
+  # Can be "h2", "sqlite" or "mariadb"
+  driver: h2
+
+  # H2 and SQLite
+  # Relative path to the database file
+  path: data.db
+
+  # MariaDB
+  host: localhost
+  port: 3306
+  database: database
+  username: user
+  password: password
+  ssl: false
+  sslVerify: true
