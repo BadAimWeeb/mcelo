@@ -1,5 +1,5 @@
-name: ${pluginName}
-main: "me.badaimweeb.mcelo.MCElo"
+name: MCElo
+main: "me.badaimweeb.mcelo.Main"
 
 version: ${version}
 author: BadAimWeeb

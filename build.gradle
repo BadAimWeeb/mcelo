@@ -1,6 +1,6 @@
 
 plugins {
-    id 'java-library'
+    id 'java'
     id("io.github.goooler.shadow") version "8.1.7"
 }
 
@@ -12,11 +12,14 @@ repositories {
 
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT'
     implementation 'com.zaxxer:HikariCP:6.2.1'
+    implementation 'com.j256.ormlite:ormlite-jdbc:6.1'
+    implementation 'com.github.goochjs:glicko2:5f39e38539'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
