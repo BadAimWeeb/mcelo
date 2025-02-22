@@ -3,6 +3,7 @@ package me.badaimweeb.mcelo;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -33,17 +34,17 @@ public class PlayerCommandHandler implements CommandExecutor {
 
                 var playerRecord = plugin.getPlayerDao().queryForId(p.getUniqueId());
                 if (playerRecord == null) {
-                    sender.sendMessage(Messages.playerNotFound);
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.playerNotFound));
                     return true;
                 }
 
-                sender.sendMessage(Messages.playerEloOther
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.playerEloOther
                         .replace("<player>", p.getName() == null ? p.getUniqueId().toString() : p.getName())
                         .replace("<glixare>",
                                 String.valueOf(
                                         Math.round(playerRecord.getGlixareRating() * GlobalVariable.glixareScale)))
                         .replace("<rating>", String.valueOf(Math.round(playerRecord.getElo())))
-                        .replace("<rd>", String.valueOf(Math.round(playerRecord.getRd() * 100) / 100)));
+                        .replace("<rd>", String.valueOf(Math.round(playerRecord.getRd() * 100) / 100))));
             } else {
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command.");
@@ -54,11 +55,11 @@ public class PlayerCommandHandler implements CommandExecutor {
                         .createIfNotExists(new EloPlayer(((Player) sender).getUniqueId(), GlobalVariable.initialRating,
                                 GlobalVariable.initialRD, GlobalVariable.initialVolatility));
 
-                sender.sendMessage(Messages.playerElo
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.playerElo
                         .replace("<glixare>", String.valueOf(
                                 Math.round(playerRecord.getGlixareRating() * GlobalVariable.glixareScale)))
                         .replace("<rating>", String.valueOf(Math.round(playerRecord.getElo())))
-                        .replace("<rd>", String.valueOf(Math.round(playerRecord.getRd() * 100) / 100)));
+                        .replace("<rd>", String.valueOf(Math.round(playerRecord.getRd() * 100) / 100))));
             }
 
             return true;
