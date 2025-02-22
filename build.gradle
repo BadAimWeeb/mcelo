@@ -1,7 +1,30 @@
-
 plugins {
     id 'java'
-    id("io.github.goooler.shadow") version "8.1.7"
+    id 'com.gradleup.shadow' version '8.3.6'
+}
+
+configurations {
+    // For declaring dependencies that need to be shaded
+    shaded {
+        canBeConsumed = false
+        canBeResolved = false
+    }
+    // For declaring classpath to be packaged in the shadow jar
+    resolvable("shadedClasspath") {
+        extendsFrom(shaded)
+    }
+    // For the shaded dependencies to be available in testing
+    testImplementation {
+        extendsFrom(shaded)
+    }
+    // For the shaded dependencies to be available in compile and runtime classpaths without interfering with
+    // dependencies scope in POM file
+    runtimeClasspath {
+        extendsFrom(shadedClasspath)
+    }
+    compileClasspath {
+        extendsFrom(shadedClasspath)
+    }
 }
 
 group = 'me.badaimweeb.mcelo'
@@ -18,10 +41,13 @@ repositories {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT'
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+
     implementation 'com.zaxxer:HikariCP:6.2.1'
     implementation 'com.j256.ormlite:ormlite-jdbc:6.1'
     implementation 'com.github.goochjs:glicko2:5f39e38539'
-    compileOnly 'org.projectlombok:lombok:1.18.36'
+    implementation 'com.h2database:h2:2.3.232'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -31,6 +57,16 @@ java {
     }
 }
 
-jar {
-    archiveFileName = "${pluginName}-${version}.jar"
+shadowJar {
+    archiveClassifier = null
+}
+
+processResources {
+    filesMatching('plugin.yml') {
+        expand 'version': version
+    }
+}
+
+artifacts {
+    archives shadowJar
 }

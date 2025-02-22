@@ -1,15 +1,25 @@
 package me.badaimweeb.mcelo;
 
 public enum MatchResult {
-    WIN(1), DRAW(0.5), LOSS(0);
+    WIN(1), DRAW(0.5f), LOSS(0);
 
-    private final double value;
+    private final float value;
 
-    MatchResult(double value) {
+    MatchResult(float value) {
         this.value = value;
     }
 
-    public double getValue() {
+    public float getValue() {
         return value;
+    }
+
+    public static MatchResult fromValue(float value) {
+        for (MatchResult result : values()) {
+            if (result.getValue() == value) {
+                return result;
+            }
+        }
+
+        return null;
     }
 }

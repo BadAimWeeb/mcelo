@@ -1,5 +1,5 @@
 name: MCElo
-main: "me.badaimweeb.mcelo.Main"
+main: "me.badaimweeb.mcelo.MCElo"
 
 version: ${version}
 author: BadAimWeeb
@@ -8,10 +8,27 @@ api-version: "1.13"
 description: "General-purpose Glicko-2 Elo calulator/tracker for Spigot/Paper"
 
 commands:
-  mcelo:
-    description: "Main command for MCElo"
-    aliases: ["elo"]
+  eloadmin:
+    description: "Admin command for MCElo"
+    permission: "mcelo.eloadmin"
+    usage: /eloadmin
+  elo:
+    description: "Get your rating"
+    usage: /elo [player]
+    permission: "mcelo.elo"
 
 permissions:
   mcelo.*:
     description: "Ability to use all MCElo commands"
+    children:
+      - mcelo.eloadmin
+      - mcelo.elo
+    op: true
+
+  mcelo.eloadmin:
+    description: "Ability to use the MCElo admin command"
+    op: true
+
+  mcelo.elo:
+    description: "Ability to use the MCElo elo command"
+    default: true

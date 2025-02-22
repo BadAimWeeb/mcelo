@@ -5,7 +5,7 @@ database:
 
   # H2 and SQLite
   # Relative path to the database file
-  path: data.db
+  path: mcelo-db
 
   # MariaDB
   host: localhost
@@ -17,6 +17,12 @@ database:
   sslVerify: true
 
 tau: 0.75
-initial-volatility: 0.6
+initial-volatility: 0.06
 initial-rating: 1500
 initial-rd: 350
+glixare-scale: 25000
+
+messages:
+  player-elo: "Your rating is <glixare> (raw: <rating>±<rd>)."
+  player-elo-other: "<player>'s rating is <glixare> (raw: <rating>±<rd>)."
+  player-not-found: "Player not found."

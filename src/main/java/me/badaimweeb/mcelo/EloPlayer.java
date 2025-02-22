@@ -21,7 +21,7 @@ import org.goochjs.glicko2.RatingPeriodResults;
 @NoArgsConstructor
 @ToString
 @DatabaseTable(tableName = "mcelo-players")
-public class EloPlayer {
+public class EloPlayer implements AutoCloseable {
     @DatabaseField(id = true, uniqueIndexName = "uuid", canBeNull = false, unique = true)
     private UUID uuid;
 
@@ -40,22 +40,18 @@ public class EloPlayer {
         }
 
         /*
-         * round(
-         *  10000 / (1 + 10^(((1500 - R) * pi / sqrt(3 * ln(10)^2 * RD^2 + 2500 *
-         *  (64 * pi^2 + 147 * ln(10)^2)))))
-         * ) / 100
+         * 1 / (1 + 10^(((1500 - R) * pi / sqrt(3 * ln(10)^2 * RD^2 + 2500 *
+         * (64 * pi^2 + 147 * ln(10)^2)))))
          */
-        return Math
-                .round(10000 / (1 + Math.pow(10,
-                        ((1500 - elo) * Math.PI
-                                / Math.sqrt(3 * Math.pow(Math.log(10), 2) * Math.pow(rd, 2)
-                                        + 2500 * (64 * Math.pow(Math.PI, 2) + 147 * Math.pow(Math.log(10), 2)))))))
-                / 100.0;
+        return 1 / (1 + Math.pow(10,
+                ((1500 - elo) * Math.PI
+                        / Math.sqrt(3 * Math.pow(Math.log(10), 2) * Math.pow(rd, 2)
+                                + 2500 * (64 * Math.pow(Math.PI, 2) + 147 * Math.pow(Math.log(10), 2))))));
     }
 
     public void updateRating(EloPlayer op, MatchResult result) {
         RatingCalculator rc = new RatingCalculator(GlobalVariable.initialVolatility, GlobalVariable.tau);
-        
+
         Rating r = new Rating("", rc, elo, rd, vol);
         Rating or = new Rating("", rc, op.getElo(), op.getRd(), op.getVol());
 
@@ -81,9 +77,9 @@ public class EloPlayer {
 
     public void updateRating(double o_elo, double o_rd, MatchResult result) {
         RatingCalculator rc = new RatingCalculator(GlobalVariable.initialVolatility, GlobalVariable.tau);
-        
+
         Rating r = new Rating("", rc, elo, rd, vol);
-        Rating or = new Rating("", rc, o_elo, o_rd, vol);
+        Rating or = new Rating("", rc, o_elo, o_rd, GlobalVariable.initialVolatility);
 
         RatingPeriodResults results = new RatingPeriodResults();
         if (result == MatchResult.WIN) {
@@ -99,5 +95,9 @@ public class EloPlayer {
         elo = r.getRating();
         rd = r.getRatingDeviation();
         vol = r.getVolatility();
+    }
+
+    @Override
+    public void close() throws Exception {
     }
 }
