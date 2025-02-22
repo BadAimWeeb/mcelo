@@ -1,6 +1,6 @@
 
 database:
-  # Can be "h2", "sqlite" or "mariadb"
+  # Can be "h2", "sqlite", or "mariadb"
   driver: h2
 
   # H2 and SQLite
@@ -17,4 +17,6 @@ database:
   sslVerify: true
 
 tau: 0.75
-volatility: 0.6
+initial-volatility: 0.6
+initial-rating: 1500
+initial-rd: 350

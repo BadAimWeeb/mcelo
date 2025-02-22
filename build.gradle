@@ -13,6 +13,7 @@ repositories {
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url 'https://jitpack.io' }
+    maven { url 'https://projectlombok.org/mavenrepo' }
 }
 
 dependencies {
@@ -20,6 +21,7 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:6.2.1'
     implementation 'com.j256.ormlite:ormlite-jdbc:6.1'
     implementation 'com.github.goochjs:glicko2:5f39e38539'
+    compileOnly 'org.projectlombok:lombok:1.18.36'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

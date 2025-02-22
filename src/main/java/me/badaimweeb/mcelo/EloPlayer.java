@@ -5,10 +5,21 @@ import java.util.UUID;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 import org.goochjs.glicko2.Rating;
 import org.goochjs.glicko2.RatingCalculator;
 import org.goochjs.glicko2.RatingPeriodResults;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 @DatabaseTable(tableName = "mcelo-players")
 public class EloPlayer {
     @DatabaseField(id = true, uniqueIndexName = "uuid", canBeNull = false, unique = true)
@@ -22,30 +33,6 @@ public class EloPlayer {
 
     @DatabaseField(canBeNull = false, defaultValue = "0.6")
     private double vol;
-
-    public double getElo() {
-        return elo;
-    }
-
-    public double getRD() {
-        return rd;
-    }
-
-    public double getVol() {
-        return vol;
-    }
-
-    public void setElo(double elo) {
-        this.elo = elo;
-    }
-
-    public void setRD(double rd) {
-        this.rd = rd;
-    }
-
-    public void setVol(double vol) {
-        this.vol = vol;
-    }
 
     public double getGlixareRating() {
         if (rd > 100) {
@@ -70,7 +57,7 @@ public class EloPlayer {
         RatingCalculator rc = new RatingCalculator(GlobalVariable.initialVolatility, GlobalVariable.tau);
         
         Rating r = new Rating("", rc, elo, rd, vol);
-        Rating or = new Rating("", rc, op.getElo(), op.getRD(), op.getVol());
+        Rating or = new Rating("", rc, op.getElo(), op.getRd(), op.getVol());
 
         RatingPeriodResults results = new RatingPeriodResults();
         if (result == MatchResult.WIN) {
@@ -88,7 +75,7 @@ public class EloPlayer {
         vol = r.getVolatility();
 
         op.setElo(or.getRating());
-        op.setRD(or.getRatingDeviation());
+        op.setRd(or.getRatingDeviation());
         op.setVol(or.getVolatility());
     }
 
