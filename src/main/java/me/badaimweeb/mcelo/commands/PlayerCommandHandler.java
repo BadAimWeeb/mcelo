@@ -1,20 +1,28 @@
-package me.badaimweeb.mcelo;
+package me.badaimweeb.mcelo.commands;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import me.badaimweeb.mcelo.ColorTextParser;
+import me.badaimweeb.mcelo.EloPlayer;
+import me.badaimweeb.mcelo.GlobalVariable;
+import me.badaimweeb.mcelo.MCElo;
+import me.badaimweeb.mcelo.Messages;
+import net.kyori.adventure.audience.Audience;
 
 @RequiredArgsConstructor
-public class PlayerCommandHandler implements CommandExecutor {
+public class PlayerCommandHandler implements CommandExecutor, TabCompleter {
     @NonNull
     private MCElo plugin;
 
@@ -32,17 +40,19 @@ public class PlayerCommandHandler implements CommandExecutor {
 
                 OfflinePlayer p = Bukkit.getOfflinePlayer(playerUUID);
 
+                Audience audience = plugin.getAdventure().sender(sender);
+
                 var playerRecord = plugin.getPlayerDao().queryForId(p.getUniqueId());
                 if (playerRecord == null) {
-                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.playerNotFound));
+                    audience.sendMessage(ColorTextParser.parse(Messages.playerNotFound));
                     return true;
                 }
 
-                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.playerEloOther
+                audience.sendMessage(ColorTextParser.parse(Messages.playerEloOther
                         .replace("<player>", p.getName() == null ? p.getUniqueId().toString() : p.getName())
                         .replace("<glixare>",
                                 String.valueOf(
-                                        Math.round(playerRecord.getGlixareRating() * GlobalVariable.glixareScale)))
+                                        Math.round(playerRecord.getGlixare() * GlobalVariable.glixareScale)))
                         .replace("<rating>", String.valueOf(Math.round(playerRecord.getElo())))
                         .replace("<rd>", String.valueOf(Math.round(playerRecord.getRd() * 100) / 100))));
             } else {
@@ -55,9 +65,11 @@ public class PlayerCommandHandler implements CommandExecutor {
                         .createIfNotExists(new EloPlayer(((Player) sender).getUniqueId(), GlobalVariable.initialRating,
                                 GlobalVariable.initialRD, GlobalVariable.initialVolatility));
 
-                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.playerElo
+                Audience audience = plugin.getAdventure().sender(sender);
+
+                audience.sendMessage(ColorTextParser.parse(Messages.playerElo
                         .replace("<glixare>", String.valueOf(
-                                Math.round(playerRecord.getGlixareRating() * GlobalVariable.glixareScale)))
+                                Math.round(playerRecord.getGlixare() * GlobalVariable.glixareScale)))
                         .replace("<rating>", String.valueOf(Math.round(playerRecord.getElo())))
                         .replace("<rd>", String.valueOf(Math.round(playerRecord.getRd() * 100) / 100))));
             }
@@ -66,6 +78,18 @@ public class PlayerCommandHandler implements CommandExecutor {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+        plugin.getLogger().info(String.format("label: %s, args: %s", label, String.join(", ", args)));
+        if (args.length == 0) {
+            return null;
+        } else {
+            // Return empty list
+            return new ArrayList<String>() {
+            };
         }
     }
 }

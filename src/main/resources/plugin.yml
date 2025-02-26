@@ -7,6 +7,9 @@ author: BadAimWeeb
 api-version: "1.13"
 description: "General-purpose Glicko-2 Elo calulator/tracker for Spigot/Paper"
 
+softdepend:
+  - PlaceholderAPI
+
 commands:
   eloadmin:
     description: "Admin command for MCElo"

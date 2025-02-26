@@ -1,17 +1,25 @@
-package me.badaimweeb.mcelo;
+package me.badaimweeb.mcelo.commands;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import me.badaimweeb.mcelo.EloPlayer;
+import me.badaimweeb.mcelo.EloRecord;
+import me.badaimweeb.mcelo.GlobalVariable;
+import me.badaimweeb.mcelo.MCElo;
+import me.badaimweeb.mcelo.MatchResult;
 
 @RequiredArgsConstructor
-public class AdminCommandHandler implements CommandExecutor {
+public class AdminCommandHandler implements CommandExecutor, TabCompleter {
     @NonNull
     private MCElo plugin;
 
@@ -20,7 +28,7 @@ public class AdminCommandHandler implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         try {
             if (args.length > 0) {
-                switch (args[0]) {
+                switch (args[0].toLowerCase()) {
                     case "record": {
                         if (args.length < 4) {
                             sender.sendMessage(
@@ -168,6 +176,92 @@ public class AdminCommandHandler implements CommandExecutor {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+        plugin.getLogger().info(String.format("label: %s, args: %s", label, String.join(", ", args)));
+        if (args.length == 0) {
+            return new ArrayList<String>() {{
+                add("help");
+                add("record");
+                add("recordanon");
+                add("setelo");
+            }};
+        } else {
+            switch (args[0].toLowerCase()) {
+                case "record": {
+                    if (args.length == 2 || args.length == 3) {
+                        return null;
+                    }
+
+                    if (args.length == 4) {
+                        return new ArrayList<String>() {{
+                            add("0");
+                            add("0.5");
+                            add("1");
+                        }};
+                    }
+
+                    return new ArrayList<String>() {};
+                }
+                case "recordanon": {
+                    if (args.length == 2) {
+                        return null;
+                    }
+
+                    if (args.length == 3) {
+                        return new ArrayList<String>() {{
+                            add("0");
+                            add("0.5");
+                            add("1");
+                        }};
+                    }
+
+                    if (args.length == 4) {
+                        return new ArrayList<String>() {{
+                            add(String.valueOf(GlobalVariable.initialRating));
+                        }};
+                    }
+
+                    if (args.length == 5) {
+                        return new ArrayList<String>() {{
+                            add(String.valueOf(GlobalVariable.initialRD));
+                        }};
+                    }
+
+                    return new ArrayList<String>() {};
+                }
+                case "setelo": {
+                    if (args.length == 2) {
+                        return null;
+                    }
+
+                    if (args.length == 3) {
+                        return new ArrayList<String>() {{
+                            add(String.valueOf(GlobalVariable.initialRating));
+                        }};
+                    }
+
+                    if (args.length == 4) {
+                        return new ArrayList<String>() {{
+                            add(String.valueOf(GlobalVariable.initialRD));
+                        }};
+                    }
+
+                    if (args.length == 5) {
+                        return new ArrayList<String>() {{
+                            add(String.valueOf(GlobalVariable.initialVolatility));
+                        }};
+                    }
+
+                    return new ArrayList<String>() {};
+                }
+                default:
+                    // Return empty list
+                    return new ArrayList<String>() {};
+            }
         }
     }
 }

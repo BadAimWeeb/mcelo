@@ -5,7 +5,6 @@ import java.util.UUID;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,38 +14,55 @@ import org.goochjs.glicko2.Rating;
 import org.goochjs.glicko2.RatingCalculator;
 import org.goochjs.glicko2.RatingPeriodResults;
 
-@Getter
-@Setter
-@AllArgsConstructor
 @NoArgsConstructor
 @ToString
 @DatabaseTable(tableName = "mcelo-players")
 public class EloPlayer implements AutoCloseable {
+    @Getter
+    @Setter
     @DatabaseField(id = true, uniqueIndexName = "uuid", canBeNull = false, unique = true)
     private UUID uuid;
 
+    @Getter
+    @Setter
     @DatabaseField(canBeNull = false, defaultValue = "1500.0")
     private double elo;
 
+    @Getter
+    @Setter
     @DatabaseField(canBeNull = false, defaultValue = "350.0")
     private double rd;
 
+    @Getter
+    @Setter
     @DatabaseField(canBeNull = false, defaultValue = "0.6")
     private double vol;
 
-    public double getGlixareRating() {
+    @Getter
+    @DatabaseField(canBeNull = false, defaultValue = "0")
+    private double glixare;
+
+    public EloPlayer(UUID uuid, double elo, double rd, double vol) {
+        this.uuid = uuid;
+        this.elo = elo;
+        this.rd = rd;
+        this.vol = vol;
+        calculateGlixareRating();
+    }
+
+    private double calculateGlixareRating() {
         if (rd > 100) {
-            return 0;
+            return glixare = 0;
         }
 
         /*
          * 1 / (1 + 10^(((1500 - R) * pi / sqrt(3 * ln(10)^2 * RD^2 + 2500 *
          * (64 * pi^2 + 147 * ln(10)^2)))))
          */
-        return 1 / (1 + Math.pow(10,
+        return glixare = (1 / (1 + Math.pow(10,
                 ((1500 - elo) * Math.PI
                         / Math.sqrt(3 * Math.pow(Math.log(10), 2) * Math.pow(rd, 2)
-                                + 2500 * (64 * Math.pow(Math.PI, 2) + 147 * Math.pow(Math.log(10), 2))))));
+                                + 2500 * (64 * Math.pow(Math.PI, 2) + 147 * Math.pow(Math.log(10), 2)))))));
     }
 
     public void updateRating(EloPlayer op, MatchResult result) {
@@ -73,6 +89,9 @@ public class EloPlayer implements AutoCloseable {
         op.setElo(or.getRating());
         op.setRd(or.getRatingDeviation());
         op.setVol(or.getVolatility());
+
+        calculateGlixareRating();
+        op.calculateGlixareRating();
     }
 
     public void updateRating(double o_elo, double o_rd, MatchResult result) {
@@ -95,6 +114,8 @@ public class EloPlayer implements AutoCloseable {
         elo = r.getRating();
         rd = r.getRatingDeviation();
         vol = r.getVolatility();
+
+        calculateGlixareRating();
     }
 
     @Override

@@ -2,6 +2,7 @@ package me.badaimweeb.mcelo;
 
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.j256.ormlite.dao.Dao;
@@ -12,6 +13,9 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import lombok.Getter;
+import me.badaimweeb.mcelo.commands.AdminCommandHandler;
+import me.badaimweeb.mcelo.commands.PlayerCommandHandler;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 
 public class MCElo extends JavaPlugin {
     @Getter
@@ -22,14 +26,34 @@ public class MCElo extends JavaPlugin {
     private HikariDataSource hkDataSource;
     private DataSourceConnectionSource connectionSource;
 
+    private PlaceholderHook placeholderHook;
+    @Getter
+    private BukkitAudiences adventure;
+
     @Override
     public void onEnable() {
         try {
             this.saveDefaultConfig();
             this.reload();
 
-            this.getCommand("elo").setExecutor(new PlayerCommandHandler(this));
-            this.getCommand("eloadmin").setExecutor(new AdminCommandHandler(this));
+            var playerCommand = new PlayerCommandHandler(this);
+            var adminCommand = new AdminCommandHandler(this);
+            
+            var bukkitPlayerCommand = Bukkit.getPluginCommand("elo");
+            var bukkitAdminCommand = Bukkit.getPluginCommand("eloadmin");
+
+            bukkitPlayerCommand.setExecutor(playerCommand);
+            bukkitPlayerCommand.setTabCompleter(playerCommand);
+
+            bukkitAdminCommand.setExecutor(adminCommand);
+            bukkitAdminCommand.setTabCompleter(adminCommand);
+
+            if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+                placeholderHook = new PlaceholderHook(this);
+                placeholderHook.register();
+            }
+
+            this.adventure = BukkitAudiences.create(this);
         } catch (Exception e) {
             e.printStackTrace();
             this.getServer().getPluginManager().disablePlugin(this);
@@ -42,13 +66,25 @@ public class MCElo extends JavaPlugin {
         try {
             if (hkDataSource != null) {
                 hkDataSource.close();
+                hkDataSource = null;
             }
 
             if (connectionSource != null) {
                 connectionSource.close();
+                connectionSource = null;
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        if (placeholderHook != null) {
+            placeholderHook.unregister();
+            placeholderHook = null;
+        }
+
+        if (this.adventure != null) {
+            this.adventure.close();
+            this.adventure = null;
         }
     }
 
