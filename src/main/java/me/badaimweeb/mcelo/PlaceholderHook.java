@@ -1,6 +1,6 @@
 package me.badaimweeb.mcelo;
 
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
@@ -27,7 +27,7 @@ public class PlaceholderHook extends PlaceholderExpansion {
     }
 
     @Override
-    public String onPlaceholderRequest(Player player, String identifier) {
+    public String onRequest(OfflinePlayer player, String identifier) {
         if (player == null) {
             return "";
         }
