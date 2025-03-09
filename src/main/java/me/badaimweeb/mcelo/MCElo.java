@@ -88,7 +88,7 @@ public class MCElo extends JavaPlugin {
         }
     }
 
-    void reload() throws Exception {
+    public void reload() throws Exception {
         if (hkDataSource != null) {
             hkDataSource.close();
         }
@@ -105,6 +105,7 @@ public class MCElo extends JavaPlugin {
         GlobalVariable.initialRD = config.getDouble("initial-rd");
         GlobalVariable.tau = config.getDouble("tau");
         GlobalVariable.glixareScale = config.getDouble("glixare-scale");
+        GlobalVariable.useModifiedGlixare = config.getBoolean("use-modified-glixare");
 
         var hkConfig = new HikariConfig();
         String driver = config.getString("database.driver");

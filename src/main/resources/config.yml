@@ -22,7 +22,16 @@ initial-rating: 1500
 initial-rd: 350
 glixare-scale: 25000
 
+# Useful for small servers where elo calculations is not invoked often
+# This will remove the RD < 100 limit from GLIXARE calculations, instead will apply a scale factor:
+# scale = min(1, max(0, (-20/3 * 10^(-6)) * rd^2 - 0.001 * rd + 7/6))
+use-modified-glixare: true
+
 messages:
   player-elo: "Your rating is <glixare> (raw: <rating>±<rd>)."
   player-elo-other: "<player>'s rating is <glixare> (raw: <rating>±<rd>)."
   player-not-found: "Player not found."
+  recalculating-glixare: "&eRecalculating GLIXARE..."
+  recalculating-glixare-finished: "&aFinished recalculating GLIXARE."
+  error-occurred: "&cAn error occurred. Please check the console for more information."
+  command-not-found: "&cCommand not found."

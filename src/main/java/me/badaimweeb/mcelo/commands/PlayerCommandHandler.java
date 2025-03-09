@@ -84,7 +84,7 @@ public class PlayerCommandHandler implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         plugin.getLogger().info(String.format("label: %s, args: %s", label, String.join(", ", args)));
-        if (args.length == 0) {
+        if (args.length <= 1) {
             return null;
         } else {
             // Return empty list

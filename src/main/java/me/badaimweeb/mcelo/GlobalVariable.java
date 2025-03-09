@@ -6,4 +6,5 @@ public class GlobalVariable {
     public static double initialRating = 1500;
     public static double initialRD = 350;
     public static double glixareScale = 25000;
+    public static boolean useModifiedGlixare = true;
 }

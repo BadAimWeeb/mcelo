@@ -12,11 +12,14 @@ import org.bukkit.command.TabCompleter;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import me.badaimweeb.mcelo.ColorTextParser;
 import me.badaimweeb.mcelo.EloPlayer;
 import me.badaimweeb.mcelo.EloRecord;
 import me.badaimweeb.mcelo.GlobalVariable;
 import me.badaimweeb.mcelo.MCElo;
 import me.badaimweeb.mcelo.MatchResult;
+import me.badaimweeb.mcelo.Messages;
+import net.kyori.adventure.audience.Audience;
 
 @RequiredArgsConstructor
 public class AdminCommandHandler implements CommandExecutor, TabCompleter {
@@ -53,11 +56,13 @@ public class AdminCommandHandler implements CommandExecutor, TabCompleter {
                             opponentUUID = Bukkit.getOfflinePlayer(opponentRaw).getUniqueId();
                         }
 
-                        var player = plugin.getPlayerDao().createIfNotExists(new EloPlayer(playerUUID, GlobalVariable.initialRating,
-                                GlobalVariable.initialRD, GlobalVariable.initialVolatility));
+                        var player = plugin.getPlayerDao()
+                                .createIfNotExists(new EloPlayer(playerUUID, GlobalVariable.initialRating,
+                                        GlobalVariable.initialRD, GlobalVariable.initialVolatility));
 
-                        var opponent = plugin.getPlayerDao().createIfNotExists(new EloPlayer(opponentUUID, GlobalVariable.initialRating,
-                                GlobalVariable.initialRD, GlobalVariable.initialVolatility));
+                        var opponent = plugin.getPlayerDao()
+                                .createIfNotExists(new EloPlayer(opponentUUID, GlobalVariable.initialRating,
+                                        GlobalVariable.initialRD, GlobalVariable.initialVolatility));
 
                         EloRecord record = new EloRecord();
                         record.setUuid(player.getUuid());
@@ -74,7 +79,7 @@ public class AdminCommandHandler implements CommandExecutor, TabCompleter {
                         player.updateRating(opponent, MatchResult.fromValue(result));
                         plugin.getPlayerDao().update(player);
                         plugin.getPlayerDao().update(opponent);
-                        
+
                         record.setAfterElo(player.getElo());
                         record.setAfterRD(player.getRd());
                         record.setAfterVol(player.getVol());
@@ -104,8 +109,9 @@ public class AdminCommandHandler implements CommandExecutor, TabCompleter {
                             playerUUID = Bukkit.getOfflinePlayer(playerRaw).getUniqueId();
                         }
 
-                        var player = plugin.getPlayerDao().createIfNotExists(new EloPlayer(playerUUID, GlobalVariable.initialRating,
-                                GlobalVariable.initialRD, GlobalVariable.initialVolatility));
+                        var player = plugin.getPlayerDao()
+                                .createIfNotExists(new EloPlayer(playerUUID, GlobalVariable.initialRating,
+                                        GlobalVariable.initialRD, GlobalVariable.initialVolatility));
 
                         double opponentElo = Double.parseDouble(args[3]);
                         double opponentRD = Double.parseDouble(args[4]);
@@ -121,10 +127,10 @@ public class AdminCommandHandler implements CommandExecutor, TabCompleter {
                         record.setOpponentBeforeElo(opponentElo);
                         record.setOpponentBeforeRD(opponentRD);
                         record.setOpponentBeforeVol(0);
- 
+
                         player.updateRating(opponentElo, opponentRD, MatchResult.fromValue(result));
                         plugin.getPlayerDao().update(player);
-                        
+
                         record.setAfterElo(player.getElo());
                         record.setAfterRD(player.getRd());
                         record.setAfterVol(player.getVol());
@@ -153,8 +159,9 @@ public class AdminCommandHandler implements CommandExecutor, TabCompleter {
                             playerUUID = Bukkit.getOfflinePlayer(playerRaw).getUniqueId();
                         }
 
-                        var player = plugin.getPlayerDao().createIfNotExists(new EloPlayer(playerUUID, GlobalVariable.initialRating,
-                                GlobalVariable.initialRD, GlobalVariable.initialVolatility));
+                        var player = plugin.getPlayerDao()
+                                .createIfNotExists(new EloPlayer(playerUUID, GlobalVariable.initialRating,
+                                        GlobalVariable.initialRD, GlobalVariable.initialVolatility));
                         player.setElo(elo);
 
                         if (args.length > 3) {
@@ -169,6 +176,40 @@ public class AdminCommandHandler implements CommandExecutor, TabCompleter {
 
                         break;
                     }
+
+                    case "recalc-glixare": {
+                        Audience audience = plugin.getAdventure().sender(sender);
+
+                        audience.sendMessage(ColorTextParser.parse(Messages.recalculatingGlixare));
+                        new Thread(() -> {
+                            try {
+                                var players = plugin.getPlayerDao().queryForAll();
+                                for (var player : players) {
+                                    player.calculateGlixareRating();
+                                    plugin.getPlayerDao().update(player);
+                                }
+
+                                audience.sendMessage(ColorTextParser.parse(Messages.recalculatingGlixareFinished));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                audience.sendMessage(ColorTextParser.parse(Messages.errorOccurred));
+                            }
+                        }).start();
+
+                        break;
+                    }
+
+                    case "reload": {
+                        plugin.reload();
+                        sender.sendMessage("Reloaded.");
+                        break;
+                    }
+
+                    default: {
+                        Audience audience = plugin.getAdventure().sender(sender);
+
+                        audience.sendMessage(ColorTextParser.parse(Messages.commandNotFound));
+                    }
                 }
             }
 
@@ -182,13 +223,17 @@ public class AdminCommandHandler implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         plugin.getLogger().info(String.format("label: %s, args: %s", label, String.join(", ", args)));
-        if (args.length == 0) {
-            return new ArrayList<String>() {{
-                add("help");
-                add("record");
-                add("recordanon");
-                add("setelo");
-            }};
+        if (args.length <= 1) {
+            return new ArrayList<String>() {
+                {
+                    add("help");
+                    add("record");
+                    add("recordanon");
+                    add("setelo");
+                    add("recalc-glixare");
+                    add("reload");
+                }
+            };
         } else {
             switch (args[0].toLowerCase()) {
                 case "record": {
@@ -197,14 +242,17 @@ public class AdminCommandHandler implements CommandExecutor, TabCompleter {
                     }
 
                     if (args.length == 4) {
-                        return new ArrayList<String>() {{
-                            add("0");
-                            add("0.5");
-                            add("1");
-                        }};
+                        return new ArrayList<String>() {
+                            {
+                                add("0");
+                                add("0.5");
+                                add("1");
+                            }
+                        };
                     }
 
-                    return new ArrayList<String>() {};
+                    return new ArrayList<String>() {
+                    };
                 }
                 case "recordanon": {
                     if (args.length == 2) {
@@ -212,26 +260,33 @@ public class AdminCommandHandler implements CommandExecutor, TabCompleter {
                     }
 
                     if (args.length == 3) {
-                        return new ArrayList<String>() {{
-                            add("0");
-                            add("0.5");
-                            add("1");
-                        }};
+                        return new ArrayList<String>() {
+                            {
+                                add("0");
+                                add("0.5");
+                                add("1");
+                            }
+                        };
                     }
 
                     if (args.length == 4) {
-                        return new ArrayList<String>() {{
-                            add(String.valueOf(GlobalVariable.initialRating));
-                        }};
+                        return new ArrayList<String>() {
+                            {
+                                add(String.valueOf(GlobalVariable.initialRating));
+                            }
+                        };
                     }
 
                     if (args.length == 5) {
-                        return new ArrayList<String>() {{
-                            add(String.valueOf(GlobalVariable.initialRD));
-                        }};
+                        return new ArrayList<String>() {
+                            {
+                                add(String.valueOf(GlobalVariable.initialRD));
+                            }
+                        };
                     }
 
-                    return new ArrayList<String>() {};
+                    return new ArrayList<String>() {
+                    };
                 }
                 case "setelo": {
                     if (args.length == 2) {
@@ -239,28 +294,36 @@ public class AdminCommandHandler implements CommandExecutor, TabCompleter {
                     }
 
                     if (args.length == 3) {
-                        return new ArrayList<String>() {{
-                            add(String.valueOf(GlobalVariable.initialRating));
-                        }};
+                        return new ArrayList<String>() {
+                            {
+                                add(String.valueOf(GlobalVariable.initialRating));
+                            }
+                        };
                     }
 
                     if (args.length == 4) {
-                        return new ArrayList<String>() {{
-                            add(String.valueOf(GlobalVariable.initialRD));
-                        }};
+                        return new ArrayList<String>() {
+                            {
+                                add(String.valueOf(GlobalVariable.initialRD));
+                            }
+                        };
                     }
 
                     if (args.length == 5) {
-                        return new ArrayList<String>() {{
-                            add(String.valueOf(GlobalVariable.initialVolatility));
-                        }};
+                        return new ArrayList<String>() {
+                            {
+                                add(String.valueOf(GlobalVariable.initialVolatility));
+                            }
+                        };
                     }
 
-                    return new ArrayList<String>() {};
+                    return new ArrayList<String>() {
+                    };
                 }
                 default:
                     // Return empty list
-                    return new ArrayList<String>() {};
+                    return new ArrayList<String>() {
+                    };
             }
         }
     }

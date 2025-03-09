@@ -50,10 +50,18 @@ public class EloPlayer implements AutoCloseable {
         calculateGlixareRating();
     }
 
-    private double calculateGlixareRating() {
-        if (rd > 100) {
+    /**
+     * This will NOT get the cached GLIXARE rating from the database. Use carefully.
+     */
+    public double calculateGlixareRating() {
+        if (rd > 100 && !GlobalVariable.useModifiedGlixare) {
             return glixare = 0;
         }
+
+        // Scale is clamped from 0 to 1
+        double scale = GlobalVariable.useModifiedGlixare
+                ? Math.min(1, Math.max(0, (-20 / 3 * Math.pow(10, -6) * Math.pow(rd, 2) - 0.001 * rd + 7 / 6)))
+                : 1;
 
         /*
          * 1 / (1 + 10^(((1500 - R) * pi / sqrt(3 * ln(10)^2 * RD^2 + 2500 *
@@ -62,7 +70,8 @@ public class EloPlayer implements AutoCloseable {
         return glixare = (1 / (1 + Math.pow(10,
                 ((1500 - elo) * Math.PI
                         / Math.sqrt(3 * Math.pow(Math.log(10), 2) * Math.pow(rd, 2)
-                                + 2500 * (64 * Math.pow(Math.PI, 2) + 147 * Math.pow(Math.log(10), 2)))))));
+                                + 2500 * (64 * Math.pow(Math.PI, 2) + 147 * Math.pow(Math.log(10), 2)))))))
+                * scale;
     }
 
     public void updateRating(EloPlayer op, MatchResult result) {
